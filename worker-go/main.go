@@ -24,11 +24,13 @@ const MaxRetries = 3
 func main() {
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	if rabbitURL == "" {
+		log.Printf(MsgRabbitMQURLNotDefined)
 		rabbitURL = "amqp://guest:guest@rabbitmq:5672/"
 	}
 
 	apiURL := os.Getenv("BACKEND_URL")
 	if apiURL == "" {
+		log.Printf(MsgBackendURLNotDefined)
 		apiURL = "http://backend:3000/api/weather/logs"
 	}
 
@@ -41,20 +43,20 @@ func main() {
 		if err == nil {
 			break
 		}
-		log.Printf("Tentativa %d/%d - Aguardando RabbitMQ ficar disponível...", i+1, maxRetries)
+		log.Printf(MsgRabbitMQRetryAttempt, i+1, maxRetries)
 		time.Sleep(5 * time.Second)
 	}
 	
 	if err != nil {
-		log.Fatalf("Erro ao conectar no RabbitMQ após %d tentativas: %s", maxRetries, err)
+		log.Fatalf(MsgRabbitMQConnectionFailed, maxRetries, err)
 	}
 	defer conn.Close()
 
-	log.Println("Worker GO conectado ao RabbitMQ")
+	log.Println(MsgRabbitMQConnected)
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalf("Erro ao abrir canal: %s", err)
+		log.Fatalf(MsgRabbitMQChannelFailed, err)
 	}
 	defer ch.Close()
 
@@ -71,7 +73,7 @@ func main() {
     nil,
 	)
 	if err != nil {
-    log.Fatalf("Erro ao declarar DLX: %s", err)
+    log.Fatalf(MsgDLXDeclareError, err)
 	}
 
 	_, err = ch.QueueDeclare(
@@ -83,7 +85,7 @@ func main() {
     nil,
 	)
 	if err != nil {
-    log.Fatalf("Erro ao declarar DLQ: %s", err)
+    log.Fatalf(MsgDLQDeclareError, err)
 	}
 
 	err = ch.QueueBind(
@@ -94,7 +96,7 @@ func main() {
     nil,
 	)
 	if err != nil {
-    log.Fatalf("Erro ao fazer bind da DLQ: %s", err)
+    log.Fatalf(MsgDLQBindError, err)
 	}
 
 	args := amqp.Table{
@@ -111,7 +113,7 @@ func main() {
     args,
 	)
 	if err != nil {
-    log.Fatalf("Erro ao declarar fila principal: %s", err)
+    log.Fatalf(MsgQueueDeclareError, err)
 	}
 
 	msgs, err := ch.Consume(
@@ -125,15 +127,15 @@ func main() {
 	)
 
 	if err != nil {
-		log.Fatalf("Erro ao consumir fila: %s", err)
+		log.Fatalf(MsgQueueConsumeError, err)
 	}
-	log.Printf("Worker aguardando mensagens na fila '%s'...", q.Name)
+	log.Printf(MsgQueueWaiting, q.Name)
 
 	forever := make(chan bool)
 
 	handleRetryOrDlq := func(ch *amqp.Channel, queueName string, msg *amqp.Delivery, retryCount int) {
     if retryCount+1 >= MaxRetries {
-        log.Println("Máximo de tentativas atingido. Enviando para DLQ.")
+        log.Println(MsgSendingToDLQ)
         msg.Nack(false, false)
         return
     }
@@ -152,18 +154,18 @@ func main() {
         },
     )
     if errPub != nil {
-        log.Println("Erro ao republicar mensagem:", errPub)
+        log.Printf(MsgRepublishError, errPub)
         msg.Nack(false, false)
         return
     }
 
     msg.Ack(false)
-    log.Printf("Mensagem republicada para retry %d\n", retryCount+1)
+    log.Printf(MsgMessageRepublished, retryCount+1)
 }
 
 	go func() {
 		for msg := range msgs {
-    		log.Println("Mensagem recebida do Python")
+    		log.Println(MsgMessageReceived)
 
     
 		retryCount := 0
@@ -175,16 +177,16 @@ func main() {
 			}
 		}
 	
-		log.Printf("Tentativa atual: %d\n", retryCount+1)
+		log.Printf(MsgCurrentAttempt, retryCount+1)
 	
 		var data WeatherData
 	
 		if err := json.Unmarshal(msg.Body, &data); err != nil {
-			log.Println("Erro ao fazer parse JSON:", err)
+			log.Printf(MsgJSONParseError, err)
 		
 		
 			if retryCount+1 >= MaxRetries {
-				log.Println("Máximo de tentativas atingido. Enviando para DLQ.")
+				log.Println(MsgSendingToDLQ)
 				msg.Nack(false, false)
 				continue
 			}
@@ -203,7 +205,7 @@ func main() {
 				},
 			)
 			if errPub != nil {
-				log.Println("Erro ao republicar mensagem:", errPub)
+				log.Printf(MsgRepublishError, errPub)
 				msg.Nack(false, false)
 				continue
 			}
@@ -216,7 +218,7 @@ func main() {
 	
 		req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
 		if err != nil {
-			log.Println("Erro ao criar request:", err)
+			log.Printf(MsgHTTPRequestError, err)
 			handleRetryOrDlq(ch, q.Name, &msg, retryCount)
 			continue
 		}
@@ -225,20 +227,20 @@ func main() {
 		client := &http.Client{Timeout: 5 * time.Second}
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Println("Erro ao enviar pro backend:", err)
+			log.Printf(MsgHTTPSendError, err)
 			handleRetryOrDlq(ch, q.Name, &msg, retryCount)
 			continue
 		}
-		defer resp.Body.Close()
 	
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			log.Println("Enviado ao backend com sucesso!")
+			log.Println(MsgHTTPSuccess)
 			msg.Ack(false)
 		} else {
-			log.Printf("Backend retornou %d — reprocessar ou DLQ", resp.StatusCode)
+			log.Printf(MsgHTTPStatusError, resp.StatusCode)
 			handleRetryOrDlq(ch, q.Name, &msg, retryCount)
 		}
-		}
+		resp.Body.Close()
+	}
 	} ()
 
 	<-forever
