@@ -2,7 +2,7 @@ import { IsNumber, IsString, IsDateString } from 'class-validator';
 
 export class CreateWeatherDto {
   @IsNumber()
-  temperateure: number;
+  temperature: number;
 
   @IsNumber()
   humidity: number;
