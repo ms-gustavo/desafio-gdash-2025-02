@@ -4,6 +4,7 @@ import { WeatherExportService } from './weather-export.service';
 import { CreateWeatherDto } from './dto/create-weather.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Response } from 'express';
+import { GetWeatherLogsQueryDto } from './dto/get-weather-logs-query.dto';
 
 @Controller('api/weather')
 export class WeatherController {
@@ -19,8 +20,8 @@ export class WeatherController {
 
   @Get('logs')
   @UseGuards(JwtAuthGuard)
-  async getLogs() {
-    return this.weatherService.findAll();
+  async getLogs(@Query() query: GetWeatherLogsQueryDto) {
+    return this.weatherService.findPaginated(query);
   }
 
   @Get('insights')

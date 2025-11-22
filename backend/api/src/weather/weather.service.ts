@@ -11,6 +11,7 @@ import {
   computeComfortScore,
   computeTemperatureTrend
 } from './utils/weather-insights.utils';
+import { GetWeatherLogsQueryDto } from './dto/get-weather-logs-query.dto';
 
 @Injectable()
 export class WeatherService {
@@ -25,6 +26,46 @@ export class WeatherService {
 
   async findAll() {
     return this.weatherModel.find().sort({ timestamp: -1 }).exec();
+  }
+
+  async findPaginated(query: GetWeatherLogsQueryDto) {
+    const { from, to } = query;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const filter: { timestamp?: { $gte?: Date; $lte?: Date } } = {};
+
+    if (from || to) {
+      filter.timestamp = {};
+      if (from) filter.timestamp.$gte = new Date(from);
+      if (to) filter.timestamp.$lte = new Date(to);
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.weatherModel
+        .find(filter)
+        .sort({ timestamp: -1 }) // mais recentes primeiro
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.weatherModel.countDocuments(filter).exec()
+    ]);
+
+    const pageCount = Math.ceil(total / limit) || 1;
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        pageCount,
+        hasNext: page < pageCount,
+        hasPrev: page > 1
+      }
+    };
   }
 
   async getInsights(from?: Date, to?: Date) {
