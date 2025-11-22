@@ -9,8 +9,8 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
-      MONGO_INIT_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
-      MONGO_INIT_DATABASE: ${MONGO_DBNAME:-weatherDB}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_DBNAME:-weather_db}
     volumes:
       - ./infra/data/mongo:/data/db
     networks:
@@ -26,6 +26,26 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    networks:
+      - gdash-network
+
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: weather-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MONGO_URL: ${MONGO_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      NODE_ENV: development
+    depends_on:
+      - mongodb
+      - rabbitmq
+    ports:
+      - "3000:3000"
     networks:
       - gdash-network
 
