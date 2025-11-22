@@ -68,6 +68,17 @@ services:
     networks:
       - gdash-network
 
+  collector:
+    build: ./collector-python
+    container_name: weather-collector
+    restart: unless-stopped
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+    networks:
+      - gdash-network
+
 networks:
   gdash-network:
     driver: bridge
