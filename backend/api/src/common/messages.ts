@@ -31,6 +31,18 @@ export const InfoMessages = {
 
   // Weather messages
   WEATHER_CREATED: 'Registro meteorológico criado com sucesso',
+  WEATHER_ALERT_HOT: 'Alerta de calor intenso.',
+  WEATHER_ALERT_COLD: 'Alerta de frio intenso.',
+  WEATHER_ALERT_WIND: 'Ventos fortes, atenção a atividades ao ar livre.',
+  WEATHER_ALERT_NONE: 'Condições gerais estáveis, sem alertas relevantes.',
+
+  WEATHER_SUMMARY_TEMPERATURE_RANGE:
+    'Temperatura média de {}°C no período, variando entre {}°C e {}°C.',
+  WEATHER_SUMMARY_TREND_RISING: 'A tendência é de aquecimento.',
+  WEATHER_SUMMARY_TREND_FALLING: 'A tendência é de resfriamento.',
+  WEATHER_SUMMARY_TREND_STABLE: 'A temperatura se manteve relativamente estável.',
+  WEATHER_SUMMARY_WIND_SPEED: 'Velocidade média do vento em {} km/h.',
+  WEATHER_SUMMARY_COMFORT_SCORE: 'Índice de conforto climático estimado em {}/100.',
 
   // General messages
   OPERATION_SUCCESS: 'Operação realizada com sucesso'
