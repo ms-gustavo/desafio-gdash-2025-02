@@ -12,13 +12,11 @@ import (
 )
 
 type WeatherData struct {
-	Temperature float64 `json:"temperature"`
-	Humidity	float64 `json:"humidity"`
-	WindSpeed	float64 `json:"windSpeed"`
-	Condition   string `json:"condition"`
-	RainProbability float64 `json:"rainProbability"`
-	Timestamp   string `json:"timestamp"`
-	Location	string `json:"location"`
+    Timestamp   string  `json:"timestamp"`
+    Temperature float64 `json:"temperature"`
+    WindSpeed   float64 `json:"windSpeed"`
+    IsDay       bool    `json:"isDay"`
+    Location    string  `json:"location"`
 }
 
 const MaxRetries = 3

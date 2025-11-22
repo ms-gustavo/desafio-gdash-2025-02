@@ -2,25 +2,20 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 export type WeatherLogDocument = WeatherLog & Document;
+
 @Schema({ timestamps: true })
 export class WeatherLog {
   @Prop({ required: true })
-  temperature: number;
+  timestamp: Date;
 
   @Prop({ required: true })
-  humidity: number;
+  temperature: number;
 
   @Prop({ required: true })
   windSpeed: number;
 
   @Prop({ required: true })
-  condition: string;
-
-  @Prop({ required: true })
-  rainProbability: number;
-
-  @Prop({ required: true })
-  timestamp: Date;
+  isDay: boolean;
 
   @Prop({ required: true })
   location: string;

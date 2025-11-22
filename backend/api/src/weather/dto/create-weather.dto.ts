@@ -1,23 +1,17 @@
-import { IsNumber, IsString, IsDateString } from 'class-validator';
+import { IsBoolean, IsDateString, IsNumber, IsString } from 'class-validator';
 
 export class CreateWeatherDto {
+  @IsDateString()
+  timestamp: string;
+
   @IsNumber()
   temperature: number;
 
   @IsNumber()
-  humidity: number;
-
-  @IsNumber()
   windSpeed: number;
 
-  @IsString()
-  condition: string;
-
-  @IsNumber()
-  rainProbability: number;
-
-  @IsDateString()
-  timestamp: string;
+  @IsBoolean()
+  isDay: boolean;
 
   @IsString()
   location: string;

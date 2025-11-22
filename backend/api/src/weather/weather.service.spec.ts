@@ -8,12 +8,10 @@ describe('WeatherService', () => {
   let service: WeatherService;
 
   const mockWeatherData: CreateWeatherDto = {
-    temperature: 28.5,
-    humidity: 70,
-    windSpeed: 12,
-    condition: 'cloudy',
-    rainProbability: 0.3,
-    timestamp: '2025-01-01T15:00:00Z',
+    timestamp: '2025-11-22T01:15:00Z',
+    temperature: 25,
+    windSpeed: 10.6,
+    isDay: false,
     location: 'Salvador, BA'
   };
 

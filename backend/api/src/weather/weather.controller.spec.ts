@@ -29,13 +29,11 @@ describe('WeatherController', () => {
   describe('createWeatherLog', () => {
     it('should create a weather log', async () => {
       const createWeatherDto: CreateWeatherDto = {
+        timestamp: '2025-11-22T01:15:00Z',
         temperature: 25,
-        humidity: 60,
-        windSpeed: 10,
-        condition: 'Sunny',
-        rainProbability: 0,
-        timestamp: new Date().toISOString(),
-        location: 'New York'
+        windSpeed: 10.6,
+        isDay: false,
+        location: 'Salvador, BA'
       };
       const result = { id: 1, ...createWeatherDto };
 
