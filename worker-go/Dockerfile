@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o worker main.go
+RUN go build -o worker .
 
 FROM alpine:latest
 
