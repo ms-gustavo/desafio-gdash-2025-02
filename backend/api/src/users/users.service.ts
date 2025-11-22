@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserRole } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { envConfig } from 'src/config/env.config';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ErrorMessages, InfoMessages, formatMessage } from 'src/common/messages';
